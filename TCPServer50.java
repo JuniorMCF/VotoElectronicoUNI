@@ -1,4 +1,3 @@
-package ElectronicVoteUNI;
 
 import java.io.BufferedReader;
 import java.io.PrintWriter;
