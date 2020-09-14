@@ -60,13 +60,13 @@ public class Servidor {
 		//Usuarios();
 
 		try{
-			int i = 0;
+			int u = 0;
 			String line = "";
 			BufferedReader br = new BufferedReader(new FileReader("electores.csv"));
 			while((line = br.readLine())!= null){
 				String[]elector = line.split(",");
-				objser.db_electores[i] = new Electores(elector[0],elector[1],elector[2],elector[3]);
-				i++;
+				objser.db_electores[u] = new Electores(elector[0],elector[1],elector[2],elector[3]);
+				u++;
 				//objser.db_electores[0] = new Electores("20142647B","1234","tk123","0");
 			}
 		}catch(IOException e){
@@ -333,8 +333,13 @@ public class Servidor {
 												response = "id:"+id+"/response:600/message:no se encontro al candidato";
 											}
 										}else{
+<<<<<<< HEAD
                                                                                         db_electores[userid].setEstado("0");
 											response = "id:"+id+"/response:506/message:tiempo expirado";
+=======
+											response = "response:506/message:tiempo expirado";
+											db_electores[userid].setEstado("0");
+>>>>>>> ed9a2b76bc7eb0c0a0ddfcf0eaa753cf039c04ff
 										}
 									}else{
 										response = "id:"+id+"/response:404/usuario: /token: "; //usuario no existe
