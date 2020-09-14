@@ -148,8 +148,15 @@ public class Servidor {
 
 	void ServidorRecibe(String llego){
 
-			System.out.println(""+llego);
+		System.out.println(""+llego);
+		if(llego.equals("getId")){
+			this.connect++;
+			id = String.valueOf(connect);
+			ServidorEnvia("id:"+id+"/");
+		}
+		else{
 			String[] json = llego.split("/");
+			System.out.println("Sí hizo split!");
 			int lenght = json.length;
 			String[] keys = new String[lenght];
 			String[] values = new String[lenght];
@@ -347,6 +354,7 @@ public class Servidor {
 				}
 			}
 		}
+	}
    
 	void ServidorEnvia(String envia){
 		//System.out.println("envia "+envia);

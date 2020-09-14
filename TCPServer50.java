@@ -38,6 +38,7 @@ public class TCPServer50 {
         int id = Integer.parseInt(key[1]);
 
         sendclis[id].sendMessage(message);
+        System.out.println("Se envió el mensaje: "+ message);
         /*
         for (int i = 1; i <= nrcli; i++) {
             System.out.print("enviando mensaje:"+message);
