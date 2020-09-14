@@ -83,7 +83,7 @@ public class Servidor {
 				
 		objser.db_candidatos[0] = new Candidatos("Yuri Nuñez");
 		objser.db_candidatos[1] = new Candidatos("Alonso Tenorio");
-		objser.db_candidatos[2] = new Candidatos("Nulo");
+		objser.db_candidatos[2] = new Candidatos("NULO");
 
 		objser.iniciar();
 	}
@@ -148,15 +148,15 @@ public class Servidor {
 
 	void ServidorRecibe(String llego){
 
-		System.out.println(""+llego);
-		if(llego.equals("getId")){
+		//System.out.println(""+llego);
+		if(llego.equals("getId:")){
 			this.connect++;
 			id = String.valueOf(connect);
-			ServidorEnvia("id:"+id+"/");
+			ServidorEnvia("id:"+id+"/response: ");
 		}
 		else{
 			String[] json = llego.split("/");
-			System.out.println("Sí hizo split!");
+			//System.out.println("Sí hizo split!");
 			int lenght = json.length;
 			String[] keys = new String[lenght];
 			String[] values = new String[lenght];
@@ -176,12 +176,12 @@ public class Servidor {
 					case "getId":
 						this.connect++;
 						id = String.valueOf(connect);
-						ServidorEnvia("id:"+id+"/");
+						ServidorEnvia("id:"+id+"/response: ");
 						break;		
 									
 					case "id":
 						id = values[i];
-						System.out.println(id);
+						//System.out.println(id);
 						break;				
 									
 					case "user":
@@ -199,11 +199,15 @@ public class Servidor {
 									//checkUser = 1;
 									userid = j;
 									j=tam;
-								}else{
-									//System.out.println("no son iguales");
+								}else if(!userdb.equals(values[i])){
+									//System.out.println(userdb+"="+values[i]);
 									//checkUser = 0;
 									userid = -1;
-								}
+								}else if (db_electores[j].getEstado().equals("2") && userdb.equals(values[i])){
+                                                                        //System.out.println("estado ="+db_electores[j].getEstado());
+                                                                        userid = -2;
+                                                                        j=tam;       
+                                                                }
 							}
 						} catch(Exception e) {
 							//System.out.println("ERROR:"+e.getMessage());
@@ -215,12 +219,11 @@ public class Servidor {
 						break;
 
 					case "password":
-						System.out.println("passwd: "+values[i]);
-						
+						//System.out.println("passwd: "+values[i]);
 												
 						try {
 							//String response = "";
-							if(userid != -1){
+							if(userid != -1 && userid != -2){
 								objusr.setValue(db_electores[userid].getUser()+","+Time()+","+""+'\n');
 								//for(int j = 0;j< db_electores.length;j++){
 								String passwrdb = db_electores[userid].getPassword();
@@ -242,10 +245,15 @@ public class Servidor {
 										checkPassword = 2;
 									}
 								//}
-							}else{
+							}else if(userid == -1){
+                                                                System.out.println("no exite usuario");
 								response = "id:"+id+"/response:404/usuario: /token: "; //usuario no existe
 								checkPassword = 0;
-							}
+							}else if(userid == -2){
+                                                                System.out.println("ya voto");
+                                                                response = "id:"+id+"/response:408/usuario: /token: "; //usuario no existe
+								checkPassword = 0;
+                                                        }
 						}catch(Exception e){
 							System.out.println("ERROR:"+e.getMessage());
 						}				
@@ -253,7 +261,7 @@ public class Servidor {
 						break;
 
 					case "token":
-						System.out.println("token: "+values[i]);	
+						//System.out.println("token: "+values[i]);	
 						
 
 						try {
@@ -298,11 +306,11 @@ public class Servidor {
 						break;
 	
 					case "candidato":
-						System.out.println("candidato: "+values[i]);
+						//System.out.println("candidato: "+values[i]);
 						try {	
 							//String userapp = values[0];// el usuario enviado desde el app
 															endVote = System.currentTimeMillis();
-							String candidato = values[1];
+							String candidato = values[2];
 							//int tam = db_electores.length;
 							
 							/*verificar timer votacion*/
@@ -310,7 +318,7 @@ public class Servidor {
 								//if(userapp.equals(db_electores[j].getUser())){//buscamos el usuario para efectuar la votacion
 							if(userid != -1){
 								timeVote = (double) ((endVote - startVote)/1000);
-								if(timeVote < 60){
+								if(timeVote < 60 && !db_electores[userid].getEstado().equals("2")){
 									//aqui se verian los estados de votacion
 									for(int k=0;k<db_candidatos.length;k++){
 										if(db_candidatos[k].getNombre().equals(candidato)){ /*agregar condicion timer*/
@@ -329,12 +337,14 @@ public class Servidor {
 									if(checkCandidato != 1){
 										response = "id:"+id+"/response:600/message:no se encontro al candidato";
 									}
-								}else{
-									db_electores[userid].setEstado("0");
-									response = "id:"+id+"/response:506/message:tiempo expirado";
-									response = "response:506/message:tiempo expirado";
-									db_electores[userid].setEstado("0");
-								}
+								}else if(db_electores[userid].getEstado().equals("2")){
+                                                                    db_electores[userid].setEstado("2");
+                                                                    response = "id:"+id+"/response:508/message:el usuario ya registro su voto";
+								}else if(timeVote >= 60 ){
+                                                                    db_electores[userid].setEstado("0");
+                                                                    response = "id:"+id+"/response:506/message:tiempo expirado";
+                                                                    //response = "response:506/message:tiempo expirado";
+                                                                }
 							}else{
 								response = "id:"+id+"/response:404/usuario: /token: "; //usuario no existe
 							}
@@ -382,7 +392,7 @@ public class Servidor {
 		db_registro.add(registro);
 		System.out.println("usuario: " + registro.getUser());
 		System.out.println("tiempo: "+ registro.getVotetime());
-		System.out.println("Voto: "+ registro.getVote());
+		//System.out.println("Voto: "+ registro.getVote());
 		objcsv.setValue(user+","+time+","+vote+'\n');
 	}
 }

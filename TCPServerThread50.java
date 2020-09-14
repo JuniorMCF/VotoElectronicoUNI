@@ -35,6 +35,8 @@ public class TCPServerThread50 extends Thread{
         this.tcpserver = tcpserver_;
         this.clientID = clientID_;
         this.cli_amigos = cli_ami_;
+        //System.out.println("id"+clientID_);
+        
     }
 
     public int ClientId(){
@@ -61,7 +63,7 @@ public class TCPServerThread50 extends Thread{
                 }
                 System.out.println("RESPONSE FROM CLIENT"+ "S: Received Message: '" + message + "'");
             } catch (Exception e) {
-                System.out.println("TCP Server"+ "S: Error "+ e);
+                System.out.println("TCP Server"+ "S: Error"+ e);
             } finally {
                 client.close();
             }
