@@ -58,13 +58,13 @@ public class Servidor {
 		/* User - Password - Token - State */		
 		//Usuarios();
 		try{
-			int i = 0;
+			int u = 0;
 			String line = "";
 			BufferedReader br = new BufferedReader(new FileReader("electores.csv"));
 			while((line = br.readLine())!= null){
 				String[]elector = line.split(",");
-				objser.db_electores[i] = new Electores(elector[0],elector[1],elector[2],elector[3]);
-				i++;
+				objser.db_electores[u] = new Electores(elector[0],elector[1],elector[2],elector[3]);
+				u++;
 				//objser.db_electores[0] = new Electores("20142647B","1234","tk123","0");
 			}
 		}catch(IOException e){
@@ -296,6 +296,7 @@ public class Servidor {
 											}
 										}else{
 											response = "response:506/message:tiempo expirado";
+											db_electores[userid].setEstado("0");
 										}
 									}else{
 										response = "response:404/usuario: /token: "; //usuario no existe
