@@ -31,6 +31,7 @@ public class Servidor {
 	int checkCandidato = 0;
 	int cantVotes = 0;
 	int userid = -1;
+        String id = "-1";
 	String sesiontime;
 
 	long startTk;
@@ -57,6 +58,7 @@ public class Servidor {
 		
 		/* User - Password - Token - State */		
 		//Usuarios();
+
 		try{
 			int i = 0;
 			String line = "";
@@ -71,11 +73,13 @@ public class Servidor {
 
 		}
 		
-		/*
-		objser.db_electores[0] = new Electores("20142647B","1234","tk123","0");
+                /*
+		objser.db_electores[0] = new Electores("20142647I","1234","tk123","0");
 		objser.db_electores[1] = new Electores("20142647A","1243","tk124","0");
 		objser.db_electores[2] = new Electores("20144567B","1245","tk125","0");
 		*/
+                
+                
 		//estado 1 : votando
 		//estado 2 : ya voto
 
@@ -99,16 +103,31 @@ public class Servidor {
 							public void messageReceived(String message){
 								synchronized(this){
 									ServidorRecibe(message);
+                                                                        
 								}
 							}
-						}
+						},
+                                                new TCPServer50.OnConnectId() {
+
+                                                    @Override
+                                                    public void connectId(String id) {
+                                                        synchronized(this){
+                                                            System.out.println("asdasdasd"+id);
+                                                                sendClientId(id);
+                                                            
+                                                        }
+                                                    }
+                                                }
+                                                
 					);
 					mTcpServer.run();
+                                        
 				}
 			}
 		).start();
 
 		try{
+                    
 			Thread.sleep(4000);
 		} 
 		catch(InterruptedException e){
@@ -130,8 +149,13 @@ public class Servidor {
 		).start();	
 		*/
 	}
+        void sendClientId(String id){
+            ServidorEnvia("id:"+id);
+        }
+        
 
 	void ServidorRecibe(String llego){
+
 			System.out.println(""+llego);
 			String[] json = llego.split("/");
 			int lenght = json.length;
@@ -150,6 +174,16 @@ public class Servidor {
 			for(int i = 0;i<lenght;i++){
 
 				switch (keys[i]) {
+                                        case "getId":
+                                            ServidorEnvia("id:");
+                                            break;
+                                    
+                                    
+                                        case "id":
+                                            id = values[i];
+                                            break;
+                                    
+                                    
 					case "user":
 						System.out.println("user: "+values[i]);
 												
@@ -182,11 +216,13 @@ public class Servidor {
 
 					case "password":
 						System.out.println("passwd: "+values[i]);
-						objusr.setValue(db_electores[userid].getUser()+","+Time()+","+""+'\n');
+						
 												
 						try {
 							//String response = "";
+                                                        //
 							if(userid != -1){
+                                                            objusr.setValue(db_electores[userid].getUser()+","+Time()+","+""+'\n');
 							//for(int j = 0;j< db_electores.length;j++){
 								String passwrdb = db_electores[userid].getPassword();
 								//if(checkUser == 1){		//si es que existe el usuario se verifica la contraseña
@@ -198,17 +234,17 @@ public class Servidor {
 										startTk = System.currentTimeMillis();
 
 										db_electores[userid].setToken(token.substring(0,5));		// Actualizamos el token del usuario
-										response = "response:200/usuario:"+userid+"/token:"+db_electores[userid].getToken()+"";
+										response = "id:"+id+"/response:200/usuario:"+userid+"/token:"+db_electores[userid].getToken()+"";
 										checkPassword = 1;
 										//si ya se encontro dejamos de buscar
 										//j = db_electores.length;
 									}else{//respondemos con 400 : contraseña invalida (token vacio)
-										response = "response:400/usuario: /token: ";
+										response = "id:"+id+"/response:400/usuario: /token: ";
 										checkPassword = 2;
 									}
 								//}
 							}else{
-								response = "response:404/usuario: /token: "; //usuario no existe
+								response = "id:"+id+"/response:404/usuario: /token: "; //usuario no existe
 								checkPassword = 0;
 							}
 						}catch(Exception e){
@@ -219,13 +255,14 @@ public class Servidor {
 
 					case "token":
 						System.out.println("token: "+values[i]);	
-						objusr.setValue(db_electores[userid].getUser()+","+sesiontime+","+values[i]+'\n');
+						
 
 						try {
 							//tomamos el usuario del token
 							//String userapp = values[0];// el usuario enviado desde el app
 							//int tam = db_electores.length;
 							//for(int j = 0;j<tam;j++){
+                                                        objusr.setValue(db_electores[userid].getUser()+","+sesiontime+","+values[i]+'\n');
 							if(userid != -1){
 								String token = db_electores[userid].getToken();
 
@@ -238,7 +275,7 @@ public class Servidor {
 										System.out.println("token correcto");
 										//checkToken = 1;
 										startVote = System.currentTimeMillis(); 
-										response = "response:202/usuario:"+userid;
+										response = "id:"+id+"/response:202/usuario:"+userid;
 										//j=tam;
 										/*generar timer votacion*/
 										/*1,5 min*/
@@ -247,13 +284,13 @@ public class Servidor {
 									}else{
 										System.out.println("token incorrecto");
 										//checkToken = 0;
-										response = "response:402/usuario:"+userid;
+										response = "id:"+id+"/response:402/usuario:"+userid;
 									}
 								}else{
-									response = "response:406/usuario:"+userid;	//token expirado
+									response = "id:"+id+"/response:406/usuario:"+userid;	//token expirado
 								}
 							}else{
-								response = "response:404/usuario: /token: "; //usuario no existe
+								response = "id:"+id+"/response:404/usuario: /token: "; //usuario no existe
 							}
 						} catch(Exception e) {
 							//System.out.println("ERROR:"+e.getMessage());
@@ -262,11 +299,12 @@ public class Servidor {
 						break;
 	
 					case "candidato":
-						endVote = System.currentTimeMillis();
+						
 
 						System.out.println("candidato: "+values[i]);
 							try {	
 								//String userapp = values[0];// el usuario enviado desde el app
+                                                                endVote = System.currentTimeMillis();
 								String candidato = values[1];
 								//int tam = db_electores.length;
 								
@@ -282,7 +320,7 @@ public class Servidor {
 													db_candidatos[k].sumarVoto();
 													db_electores[userid].setEstado("2");
 													RegistrarVoto(db_electores[userid].getUser(),Time(),db_candidatos[k].getNombre());
-													response = "response:500/message:registro exitoso";
+													response = "id:"+id+"/response:500/message:registro exitoso";
 													checkCandidato = 1;
 													checkPassword = 0;
 													checkUser = 0;
@@ -292,13 +330,14 @@ public class Servidor {
 												}
 											}
 											if(checkCandidato != 1){
-												response = "response:600/message:no se encontro al candidato";
+												response = "id:"+id+"/response:600/message:no se encontro al candidato";
 											}
 										}else{
-											response = "response:506/message:tiempo expirado";
+                                                                                        db_electores[userid].setEstado("0");
+											response = "id:"+id+"/response:506/message:tiempo expirado";
 										}
 									}else{
-										response = "response:404/usuario: /token: "; //usuario no existe
+										response = "id:"+id+"/response:404/usuario: /token: "; //usuario no existe
 									}
 								//}
 							} catch(Exception e) {
@@ -318,7 +357,7 @@ public class Servidor {
 		}
    
 	void ServidorEnvia(String envia){
-				//System.out.println(""+envia);
+		System.out.println("envia "+envia);
 		if (mTcpServer != null) {
 			mTcpServer.sendMessageTCPServer(envia);
 		}

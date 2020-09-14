@@ -35,6 +35,8 @@ public class TCPServerThread50 extends Thread{
         this.tcpserver = tcpserver_;
         this.clientID = clientID_;
         this.cli_amigos = cli_ami_;
+        System.out.println("id"+clientID_);
+        
     }
 
     public int ClientId(){
@@ -45,7 +47,7 @@ public class TCPServerThread50 extends Thread{
         running = true;
         try {
             try {               
-                boolean soycontador = false;                
+                
                 mOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(client.getOutputStream())), true);
                 System.out.println("TCP Server"+ "C: Sent.");
                 messageListener = tcpserver.getMessageListener();
