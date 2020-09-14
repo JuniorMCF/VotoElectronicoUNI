@@ -31,7 +31,8 @@ public class Servidor {
 	int checkCandidato = 0;
 	int cantVotes = 0;
 	int userid = -1;
-        String id = "-1";
+	int connect = 0;
+	String id = "-1";
 	String sesiontime;
 
 	long startTk;
@@ -56,9 +57,7 @@ public class Servidor {
 		objser.db_candidatos = new Candidatos[3];
 		objser.db_registro = new ArrayList<Registro>();
 		
-		/* User - Password - Token - State */		
-		//Usuarios();
-
+		/* User - Password - Token - State */	
 		try{
 			int u = 0;
 			String line = "";
@@ -73,17 +72,14 @@ public class Servidor {
 
 		}
 		
-                /*
+		/*
 		objser.db_electores[0] = new Electores("20142647I","1234","tk123","0");
 		objser.db_electores[1] = new Electores("20142647A","1243","tk124","0");
 		objser.db_electores[2] = new Electores("20144567B","1245","tk125","0");
 		*/
-                
-                
+				
 		//estado 1 : votando
 		//estado 2 : ya voto
-
-
 				
 		objser.db_candidatos[0] = new Candidatos("Yuri Nuñez");
 		objser.db_candidatos[1] = new Candidatos("Alonso Tenorio");
@@ -103,32 +99,32 @@ public class Servidor {
 							public void messageReceived(String message){
 								synchronized(this){
 									ServidorRecibe(message);
-                                                                        
 								}
 							}
-						},
-                                                new TCPServer50.OnConnectId() {
-
-                                                    @Override
-                                                    public void connectId(String id) {
-                                                        synchronized(this){
-                                                            System.out.println("asdasdasd"+id);
-                                                                sendClientId(id);
-                                                            
-                                                        }
-                                                    }
-                                                }
-                                                
+						}/*,
+						new TCPServer50.OnConnectId() {
+							@Override
+							public void connectId(String id) {
+								synchronized(this){
+									System.out.println("asdasdasd"+id);
+										sendClientId(id);
+				
+								}
+							}
+						}*/
 					);
 					mTcpServer.run();
-                                        
+										
 				}
 			}
 		).start();
 
 		try{
-                    
 			Thread.sleep(4000);
+			/*if(mTcpServer.nrcli>0){
+				connect++;
+				id = String.valueOf(connect);
+			}*/
 		} 
 		catch(InterruptedException e){
 			 // this part is executed when an exception (in this example InterruptedException) occurs
@@ -149,10 +145,6 @@ public class Servidor {
 		).start();	
 		*/
 	}
-        void sendClientId(String id){
-            ServidorEnvia("id:"+id);
-        }
-        
 
 	void ServidorRecibe(String llego){
 
@@ -174,16 +166,17 @@ public class Servidor {
 			for(int i = 0;i<lenght;i++){
 
 				switch (keys[i]) {
-                                        case "getId":
-                                            ServidorEnvia("id:");
-                                            break;
-                                    
-                                    
-                                        case "id":
-                                            id = values[i];
-                                            break;
-                                    
-                                    
+					case "getId":
+						this.connect++;
+						id = String.valueOf(connect);
+						ServidorEnvia("id:"+id+"/");
+						break;		
+									
+					case "id":
+						id = values[i];
+						System.out.println(id);
+						break;				
+									
 					case "user":
 						System.out.println("user: "+values[i]);
 												
@@ -220,10 +213,9 @@ public class Servidor {
 												
 						try {
 							//String response = "";
-                                                        //
 							if(userid != -1){
-                                                            objusr.setValue(db_electores[userid].getUser()+","+Time()+","+""+'\n');
-							//for(int j = 0;j< db_electores.length;j++){
+								objusr.setValue(db_electores[userid].getUser()+","+Time()+","+""+'\n');
+								//for(int j = 0;j< db_electores.length;j++){
 								String passwrdb = db_electores[userid].getPassword();
 								//if(checkUser == 1){		//si es que existe el usuario se verifica la contraseña
 									if(passwrdb.equals(values[i])){	//si el password coincide enviamos un response:200 y un token 
@@ -262,7 +254,7 @@ public class Servidor {
 							//String userapp = values[0];// el usuario enviado desde el app
 							//int tam = db_electores.length;
 							//for(int j = 0;j<tam;j++){
-                                                        objusr.setValue(db_electores[userid].getUser()+","+sesiontime+","+values[i]+'\n');
+							objusr.setValue(db_electores[userid].getUser()+","+sesiontime+","+values[i]+'\n');
 							if(userid != -1){
 								String token = db_electores[userid].getToken();
 
@@ -299,56 +291,51 @@ public class Servidor {
 						break;
 	
 					case "candidato":
-						
-
 						System.out.println("candidato: "+values[i]);
-							try {	
-								//String userapp = values[0];// el usuario enviado desde el app
-                                                                endVote = System.currentTimeMillis();
-								String candidato = values[1];
-								//int tam = db_electores.length;
-								
-								/*verificar timer votacion*/
-								//for(int j = 0;j<tam;j++){
-									//if(userapp.equals(db_electores[j].getUser())){//buscamos el usuario para efectuar la votacion
-									if(userid != -1){
-										timeVote = (double) ((endVote - startVote)/1000);
-										if(timeVote < 60){
-											//aqui se verian los estados de votacion
-											for(int k=0;k<db_candidatos.length;k++){
-												if(db_candidatos[k].getNombre().equals(candidato)){ /*agregar condicion timer*/
-													db_candidatos[k].sumarVoto();
-													db_electores[userid].setEstado("2");
-													RegistrarVoto(db_electores[userid].getUser(),Time(),db_candidatos[k].getNombre());
-													response = "id:"+id+"/response:500/message:registro exitoso";
-													checkCandidato = 1;
-													checkPassword = 0;
-													checkUser = 0;
-													checkToken =0;
-													k = db_candidatos.length;
-													//j = tam;
-												}
-											}
-											if(checkCandidato != 1){
-												response = "id:"+id+"/response:600/message:no se encontro al candidato";
-											}
-										}else{
-<<<<<<< HEAD
-                                                                                        db_electores[userid].setEstado("0");
-											response = "id:"+id+"/response:506/message:tiempo expirado";
-=======
-											response = "response:506/message:tiempo expirado";
-											db_electores[userid].setEstado("0");
->>>>>>> ed9a2b76bc7eb0c0a0ddfcf0eaa753cf039c04ff
+						try {	
+							//String userapp = values[0];// el usuario enviado desde el app
+															endVote = System.currentTimeMillis();
+							String candidato = values[1];
+							//int tam = db_electores.length;
+							
+							/*verificar timer votacion*/
+							//for(int j = 0;j<tam;j++){
+								//if(userapp.equals(db_electores[j].getUser())){//buscamos el usuario para efectuar la votacion
+							if(userid != -1){
+								timeVote = (double) ((endVote - startVote)/1000);
+								if(timeVote < 60){
+									//aqui se verian los estados de votacion
+									for(int k=0;k<db_candidatos.length;k++){
+										if(db_candidatos[k].getNombre().equals(candidato)){ /*agregar condicion timer*/
+											db_candidatos[k].sumarVoto();
+											db_electores[userid].setEstado("2");
+											RegistrarVoto(db_electores[userid].getUser(),Time(),db_candidatos[k].getNombre());
+											response = "id:"+id+"/response:500/message:registro exitoso";
+											checkCandidato = 1;
+											checkPassword = 0;
+											checkUser = 0;
+											checkToken =0;
+											k = db_candidatos.length;
+											//j = tam;
 										}
-									}else{
-										response = "id:"+id+"/response:404/usuario: /token: "; //usuario no existe
 									}
-								//}
-							} catch(Exception e) {
-								//System.out.println("ERROR:"+e.getMessage());
+									if(checkCandidato != 1){
+										response = "id:"+id+"/response:600/message:no se encontro al candidato";
+									}
+								}else{
+									db_electores[userid].setEstado("0");
+									response = "id:"+id+"/response:506/message:tiempo expirado";
+									response = "response:506/message:tiempo expirado";
+									db_electores[userid].setEstado("0");
+								}
+							}else{
+								response = "id:"+id+"/response:404/usuario: /token: "; //usuario no existe
 							}
-							ServidorEnvia(response);									
+							//}
+						} catch(Exception e) {
+							//System.out.println("ERROR:"+e.getMessage());
+						}
+						ServidorEnvia(response);									
 						break;
 
 					case "estado":
@@ -362,7 +349,7 @@ public class Servidor {
 		}
    
 	void ServidorEnvia(String envia){
-		System.out.println("envia "+envia);
+		//System.out.println("envia "+envia);
 		if (mTcpServer != null) {
 			mTcpServer.sendMessageTCPServer(envia);
 		}
