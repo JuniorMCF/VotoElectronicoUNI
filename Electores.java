@@ -20,6 +20,7 @@ public class Electores {
         this.password = password;
         this.token = token;
         this.estado = estado;
+        //this.sesiontime = sesiontime;
     }
     
     

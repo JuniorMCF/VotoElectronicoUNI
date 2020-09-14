@@ -47,7 +47,7 @@ public class TCPServer50 {
                 sendclis[nrcli] = new TCPServerThread50(client,this,nrcli,sendclis);
                 Thread t = new Thread(sendclis[nrcli]);
                 t.start();
-                System.out.println("Nuevo conectado:"+ nrcli+" jugadores conectados");
+                System.out.println("Nuevo conectado:"+ nrcli+" electores conectados");
 
             }
             
